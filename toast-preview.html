@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معاينة نظام الإشعارات الموحد</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8fafc;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 40px;
+            font-size: 32px;
+        }
+
+        .demo-section {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .demo-section h2 {
+            color: #374151;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .toast-preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .toast {
+            max-width: 500px;
+            width: 100%;
+            padding: 18px 28px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #166534;
+            border-color: #86efac;
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+
+        .toast-loading {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #1e40af;
+            border-color: #93c5fd;
+        }
+
+        .toast-default {
+            background: #ffffff;
+            color: #1f2937;
+            border-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-success {
+            color: #22c55e;
+        }
+
+        .icon-error {
+            color: #ef4444;
+        }
+
+        .icon-loading {
+            color: #3b82f6;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .code-section {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .code-section pre {
+            margin: 0;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #bae6fd;
+        }
+
+        .feature-card h3 {
+            color: #0c4a6e;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .feature-card p {
+            color: #075985;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .button-demo {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-error {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-error:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-loading {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-loading:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎨 معاينة نظام الإشعارات الموحد</h1>
+
+        <div class="demo-section">
+            <h2>📱 أمثلة على الإشعارات</h2>
+
+            <div class="toast-preview-container">
+                <div class="toast toast-success">
+                    <div class="toast-icon icon-success">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                    </div>
+                    <span>تم حفظ المستخدم بنجاح!</span>
+                </div>
+
+                <div class="toast toast-error">
+                    <div class="toast-icon icon-error">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                    </div>
+                    <span>فشل تحديث الحالة. جاري التراجع...</span>
+                </div>
+
+                <div class="toast toast-loading">
+                    <div class="toast-icon icon-loading">
+                        <div class="spinner"></div>
+                    </div>
+                    <span>جاري تحميل البيانات...</span>
+                </div>
+
+                <div class="toast toast-default">
+                    <div class="toast-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4M12 8h.01" />
+                        </svg>
+                    </div>
+                    <span>رسالة إعلامية عامة</span>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <pre>
+// مثال على الاستخدام في React
+import toast from "react-hot-toast";
+
+// إشعار نجاح
+toast.success("تم حفظ المستخدم بنجاح!");
+
+// إشعار خطأ
+toast.error("فشل تحديث الحالة. جاري التراجع...");
+
+// إشعار تحميل
+const loadingToast = toast.loading("جاري تحميل البيانات...");
+// عند الانتهاء
+toast.dismiss(loadingToast);
+
+// إشعار عادي
+toast("رسالة إعلامية عامة");
+                </pre>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>✨ المميزات الرئيسية</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>🎯 موضع ثابت</h3>
+                    <p>جميع الإشعارات تظهر في أعلى الشاشة في المنتصف بشكل موحد</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🎨 تصميم عصري</h3>
+                    <p>استخدام gradients جميلة وألوان متناسقة لكل نوع إشعار</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>⏱️ مدة مناسبة</h3>
+                    <p>نجاح: 4 ثوانٍ | خطأ: 5 ثوانٍ | تحميل: حتى الإلغاء</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🔔 أيقونات واضحة</h3>
+                    <p>كل إشعار له أيقونة مميزة بلون متناسق مع نوعه</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>📱 متجاوب</h3>
+                    <p>يعمل بشكل ممتاز على جميع أحجام الشاشات</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>✅ سهل الاستخدام</h3>
+                    <p>API بسيط وواضح للمطورين</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎮 جرب الإشعارات (تفاعلي)</h2>
+            <p style="color: #6b7280; margin-bottom: 20px;">انقر على الأزرار لرؤية الإشعارات في التطبيق الفعلي</p>
+
+            <div class="button-demo">
+                <button class="btn btn-success" onclick="showToast('success')">
+                    ✅ إشعار نجاح
+                </button>
+                <button class="btn btn-error" onclick="showToast('error')">
+                    ❌ إشعار خطأ
+                </button>
+                <button class="btn btn-loading" onclick="showToast('loading')">
+                    ⏳ إشعار تحميل
+                </button>
+            </div>
+
+            <div class="code-section" style="margin-top: 30px;">
+                <pre>
+// الإعدادات الحالية في App.jsx
+&lt;Toaster
+  position="top-center"
+  reverseOrder={false}
+  gutter={8}
+  containerStyle={{ top: 20 }}
+  toastOptions={{
+    duration: 4000,
+    style: {
+      background: "#ffffff",
+      color: "#1f2937",
+      borderRadius: "16px",
+      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+      padding: "18px 28px",
+      fontSize: "15px",
+      fontWeight: "600",
+      maxWidth: "500px",
+      border: "1px solid rgba(0, 0, 0, 0.05)",
+      backdropFilter: "blur(10px)",
+    },
+    success: {
+      duration: 4000,
+      style: {
+        background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
+        color: "#166534",
+        border: "1px solid #86efac",
+      },
+      iconTheme: { primary: "#22c55e", secondary: "#ffffff" },
+    },
+    error: {
+      duration: 5000,
+      style: {
+        background: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+        color: "#991b1b",
+        border: "1px solid #fca5a5",
+      },
+      iconTheme: { primary: "#ef4444", secondary: "#ffffff" },
+    },
+    loading: {
+      style: {
+        background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+        color: "#1e40af",
+        border: "1px solid #93c5fd",
+      },
+      iconTheme: { primary: "#3b82f6", secondary: "#ffffff" },
+    },
+  }}
+/&gt;
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showToast(type) {
+            alert(`في التطبيق الفعلي، سيظهر إشعار ${type === 'success' ? 'نجاح' : type === 'error' ? 'خطأ' : 'تحميل'} في أعلى الشاشة!\n\nلرؤية الإشعارات الفعلية، افتح التطبيق على http://localhost:5173`);
+        }
+    </script>
+</body>
+
+</html>
