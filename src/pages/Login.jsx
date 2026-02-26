@@ -22,6 +22,7 @@ const AdminLogin = () => {
           headers: {
             "Content-Type": "application/json",
             "Accept": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
             "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify({ email, password }),
@@ -33,7 +34,9 @@ const AdminLogin = () => {
       if (contentType && contentType.includes("application/json")) {
         data = await response.json();
       } else {
-        throw new Error("Invalid response from server");
+        const text = await response.text();
+        console.error("Non-JSON Response Body:", text);
+        data = { message: text || "Invalid response from server" };
       }
 
       if (response.ok) {
@@ -60,7 +63,12 @@ const AdminLogin = () => {
           navigate("/dashboard");
         }, 1000);
       } else {
-        toast.error(data.message || "Email or password is incorrect");
+        console.error("Login Failed Details:", {
+          status: response.status,
+          statusText: response.statusText,
+          data: data
+        });
+        toast.error(data.message || `Error ${response.status}: ${response.statusText || "Access Forbidden"}`);
       }
     } catch (err) {
       console.error("Login error:", err);

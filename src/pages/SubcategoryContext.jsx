@@ -10,10 +10,12 @@ export const SubcategoryProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
 
     const getAuthHeader = async () => {
-        const token = localStorage.getItem("adminToken");
+        const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
+        const userId = localStorage.getItem("userId");
         return {
             "Authorization": `Bearer ${token}`,
             "Accept": "application/json",
+            "X-User-Id": userId || "",
             "ngrok-skip-browser-warning": "true"
         };
     }
@@ -28,8 +30,10 @@ export const SubcategoryProvider = ({ children }) => {
 
             const contentType = res.headers.get("content-type");
             if (!res.ok) {
-                if (res.status === 401) {
+                if (res.status === 401 || res.status === 403) {
                     toast.error("Session expired. Please log in again.");
+                    localStorage.clear();
+                    setTimeout(() => window.location.href = "/", 2000);
                     return;
                 }
                 throw new Error(`Fetch failed: ${res.status}`);
@@ -58,24 +62,33 @@ export const SubcategoryProvider = ({ children }) => {
         try {
             const authHeaders = await getAuthHeader();
             const { "Content-Type": _, ...headersWithoutContentType } = authHeaders;
+            const userId = localStorage.getItem("userId");
 
             const formData = new FormData();
             formData.append("name", subcategory.name);
             formData.append("categoryId", subcategory.categoryId);
+            formData.append("category_id", subcategory.categoryId); // Support both naming styles
+
             if (subcategory.status) formData.append("status", subcategory.status);
             if (subcategory.description) formData.append("description", subcategory.description);
             if (subcategory.image) formData.append("image", subcategory.image);
+            if (userId) formData.append("user_id", userId);
+
+            console.log("Adding subcategory via FormData...");
 
             const res = await fetch(`${API_BASE_URL}/subcategory`, {
                 method: "POST",
-                headers: headersWithoutContentType,
+                headers: {
+                    ...headersWithoutContentType,
+                    "X-Requested-With": "XMLHttpRequest"
+                },
                 body: formData
             });
 
 
-            if (res.status === 401) {
-                localStorage.removeItem("adminToken");
+            if (res.status === 401 || res.status === 403) {
                 toast.error("Session expired. Please log in again.");
+                localStorage.clear();
                 setTimeout(() => window.location.href = "/", 2000);
                 throw new Error("Session expired");
             }
@@ -144,9 +157,9 @@ export const SubcategoryProvider = ({ children }) => {
                 });
             }
 
-            if (res.status === 401) {
-                localStorage.removeItem("adminToken");
+            if (res.status === 401 || res.status === 403) {
                 toast.error("Session expired. Please log in again.");
+                localStorage.clear();
                 setTimeout(() => window.location.href = "/", 2000);
                 throw new Error("Session expired");
             }
@@ -189,9 +202,9 @@ export const SubcategoryProvider = ({ children }) => {
                 headers: authHeaders
             });
 
-            if (res.status === 401) {
-                localStorage.removeItem("adminToken");
+            if (res.status === 401 || res.status === 403) {
                 toast.error("Session expired. Please log in again.");
+                localStorage.clear();
                 setTimeout(() => window.location.href = "/", 2000);
                 return;
             }

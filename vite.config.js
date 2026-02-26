@@ -25,6 +25,46 @@ export default defineConfig({
         headers: {
           'ngrok-skip-browser-warning': 'true'
         }
+      },
+      '/storage': {
+        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
+      },
+      '/public': {
+        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
+      },
+      '/images': {
+        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
+      },
+      '/img': {
+        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
+      },
+      '/assets': {
+        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
       }
     }
   }

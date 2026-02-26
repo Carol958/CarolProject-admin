@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCategories } from "./CategoryContext";
 import { toast } from "react-hot-toast";
+import { getImageUrl, handleImageError } from "../utils/imageHelper";
 
 export default function EditCategory({ setActive, category: propCategory }) {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function EditCategory({ setActive, category: propCategory }) {
     const [imageName, setImageName] = useState(category?.image && typeof category.image === 'string' ? category.image : "No file chosen");
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     useEffect(() => {
         if (!category) {
@@ -35,6 +37,7 @@ export default function EditCategory({ setActive, category: propCategory }) {
         if (file) {
             setFormData({ ...formData, image: file });
             setImageName(file.name);
+            setPreviewUrl(URL.createObjectURL(file));
         }
     };
 
@@ -117,6 +120,26 @@ export default function EditCategory({ setActive, category: propCategory }) {
                                 <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                             </label>
                         </div>
+                        {previewUrl ? (
+                            <div className="mt-3 p-2 bg-sky-50 rounded-lg border border-sky-100 w-fit">
+                                <p className="text-[10px] text-sky-600 font-bold uppercase mb-1">New Selection Preview</p>
+                                <img
+                                    src={previewUrl}
+                                    className="h-20 w-32 object-cover rounded shadow-sm border border-white"
+                                    alt="New Preview"
+                                />
+                            </div>
+                        ) : formData.image && typeof formData.image === 'string' && (
+                            <div className="mt-3 p-2 bg-gray-50 rounded-lg border border-gray-100 w-fit">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Current Image</p>
+                                <img
+                                    src={getImageUrl(formData.image)}
+                                    className="h-20 w-32 object-cover rounded shadow-sm border border-white"
+                                    alt="Preview"
+                                    onError={handleImageError}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Status Field */}

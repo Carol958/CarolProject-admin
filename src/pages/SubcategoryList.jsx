@@ -275,26 +275,26 @@ export default function SubcategoryList({ setActive }) {
             )}
             {/* Security Alert Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50">
-                    <div className="bg-white p-8 rounded-2xl text-center shadow-2xl max-w-sm w-full mx-4 border border-gray-50 animate-in zoom-in slide-in-from-bottom-4 duration-300">
-                        <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-6 shadow-inner">
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex justify-center items-center z-[100] p-4">
+                    <div className="bg-white p-10 rounded-[32px] text-center shadow-2xl max-w-[380px] w-full border border-gray-100 animate-in zoom-in-95 duration-200">
+                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
                             <FaTrash />
                         </div>
-                        <h3 className="text-gray-900 font-black text-xl mb-3">Security Alert</h3>
-                        <p className="text-gray-500 mb-8 leading-relaxed">
-                            You are about to permanently delete <span className="font-bold text-gray-800">
+                        <h3 className="text-[#04364A] font-bold text-2xl mb-2">Alert</h3>
+                        <p className="text-gray-500 mb-8 leading-relaxed text-sm px-2">
+                            You are about to permanently delete <span className="font-semibold text-gray-800">
                                 @{subcategories.find(s => s.id === modalOpen)?.name}
                             </span>. Are you absolutely certain?
                         </p>
-                        <div className="flex gap-4">
+                        <div className="flex gap-3">
                             <button
-                                className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-colors cursor-pointer border-none shadow-sm"
+                                className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-all cursor-pointer text-sm"
                                 onClick={() => setModalOpen(null)}
                             >
                                 Cancel
                             </button>
                             <button
-                                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-100 cursor-pointer active:scale-95 border-none"
+                                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 cursor-pointer active:scale-95 text-sm"
                                 onClick={() => {
                                     deleteSubcategory(modalOpen);
                                     setModalOpen(null);

@@ -13,11 +13,19 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
     password: "",
     confirmPassword: "",
     contact: "",
-    userType: "User",
+    userType: "customer",
     status: true,
     address: "",
     description: "",
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please login to access this page");
+      navigate("/");
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (editUserData) {
@@ -26,7 +34,7 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
         name: editUserData.name || "",
         email: editUserData.email || "",
         contact: editUserData.phone || editUserData.contact || "",
-        userType: editUserData.role === "admin" ? "Admin" : "User",
+        userType: editUserData.role || "customer",
         status: editUserData.status?.toLowerCase() === "active",
         address: editUserData.address || "",
         description: editUserData.description || "",
@@ -41,7 +49,7 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
         password: "",
         confirmPassword: "",
         contact: "",
-        userType: "User",
+        userType: "customer",
         status: true,
         address: "",
         description: "",
@@ -81,34 +89,6 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
       return;
     }
 
-    const apiData = {
-      name: formData.name,
-      username: formData.email,
-      email: formData.email,
-      phone: formData.contact,
-      role: formData.userType === "Admin" ? "admin" : "customer",
-      status: formData.status ? "active" : "inactive",
-      is_active: formData.status ? 1 : 0,
-      isActive: formData.status ? 1 : 0,
-      active: formData.status ? 1 : 0,
-      address: formData.address,
-      city: formData.address,
-      image: "",
-      description: formData.description,
-    };
-
-    if (formData.id) {
-      apiData.id = formData.id;
-      apiData.user_id = formData.id;
-    }
-
-    if (formData.password) {
-      apiData.password = formData.password;
-      if (!formData.id) {
-        apiData.password_confirmation = formData.confirmPassword;
-      }
-    }
-
     try {
       const isEdit = !!formData.id;
       const url = isEdit ? `/api/users/${formData.id}` : "/api/register";
@@ -116,7 +96,34 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
       const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
 
-      console.log(`Submitting (${isEdit ? "Update" : "Create"}):`, url);
+      const apiData = {
+        name: formData.name,
+        email: formData.email,
+        username: formData.email,
+        phone: formData.contact,
+        role: formData.userType,
+        status: formData.status ? "active" : "inactive",
+        address: formData.address || "",
+        city: formData.address || "",
+        description: formData.description || "",
+        active: formData.status ? 1 : 0,
+        is_active: formData.status ? 1 : 0,
+        isActive: formData.status ? 1 : 0,
+        notification_preferences: ""
+      };
+
+      if (formData.password) {
+        apiData.password = formData.password;
+        apiData.password_confirmation = formData.confirmPassword;
+      }
+
+      if (formData.id) {
+        apiData.id = formData.id;
+      }
+
+      if (userId) apiData.user_id = userId;
+
+      console.log(`Submitting JSON (${method}):`, url);
 
       const response = await fetch(url, {
         method: method,
@@ -125,25 +132,28 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
           "Accept": "application/json",
           "Authorization": `Bearer ${token}`,
           "X-User-Id": userId || "",
+          "X-Requested-With": "XMLHttpRequest",
           "ngrok-skip-browser-warning": "true"
         },
         body: JSON.stringify(apiData),
       });
 
-      console.log("Submit response status:", response.status);
-
       if (response.ok) {
         const responseData = await response.json().catch(() => ({}));
 
-        // --- تعديل حاسم هنا ---
-        // إذا كان المستخدم جديداً (Register) وكان المطلوب أن يكون Inactive
-        // نقوم بإرسال طلب تحديث حالة فوراً بعد الإنشاء لأن السيرفر قد يضع الحالة Active افتراضياً
+        if (responseData.success === false && responseData.message?.toLowerCase().includes("expired")) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.clear();
+          setTimeout(() => navigate("/"), 2000);
+          return;
+        }
+
         if (!isEdit && !formData.status) {
           try {
             const newUserId = responseData.user?.id || responseData.id || responseData.data?.id;
             if (newUserId) {
               await fetch(`/api/users/${newUserId}`, {
-                method: "POST",
+                method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
                   "Accept": "application/json",
@@ -157,8 +167,7 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
                   status: "inactive",
                   is_active: 0,
                   isActive: 0,
-                  active: 0,
-                  _method: "PUT"
+                  active: 0
                 }),
               });
             }
@@ -172,25 +181,26 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
           if (formData.id) clearEditUser();
           setActive("User List");
         }, 1500);
-        return;
-      } else if (response.status === 401) {
-        toast.error("Your session has expired. Please log in again.");
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("token");
-        setTimeout(() => navigate("/"), 2000);
-        return;
+      } else if (response.status === 401 || response.status === 403) {
+        const data = await response.json().catch(() => ({}));
+        const isInactive = data.message?.toLowerCase().includes("not active") ||
+          data.message?.toLowerCase().includes("inactive");
+
+        if (isInactive || response.status === 401 || response.status === 403) {
+          toast.error("Session expired or access forbidden. Please log in again.");
+          localStorage.clear();
+          setTimeout(() => navigate("/"), 2000);
+        } else {
+          toast.error(data.message || "Access Denied");
+        }
       } else {
         const data = await response.json().catch(() => ({}));
         let errorMessage = data.message || data.error || `Server error (${response.status})`;
-
         if (data.errors) {
           const messages = [];
-          const errorSource = Array.isArray(data.errors) ? data.errors : Object.values(data.errors);
-          errorSource.forEach(err => {
-            if (typeof err === "string") messages.push(err);
-            else if (err && typeof err === "object") {
-              messages.push(err.msg || err.message || err.error || JSON.stringify(err));
-            }
+          Object.values(data.errors).forEach(err => {
+            if (Array.isArray(err)) messages.push(...err);
+            else messages.push(err);
           });
           if (messages.length > 0) errorMessage = messages.join(", ");
         }
@@ -206,7 +216,18 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
 
   return (
     <div className="font-sans text-[#04364a] animate-in fade-in duration-500 pt-2">
-      <h2 className="text-[28px] font-bold mb-5">{formData.id ? "Edit User" : "Add New User"}</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-[28px] font-bold">{formData.id ? "Edit User" : "Add New User"}</h2>
+        <button
+          onClick={() => {
+            if (formData.id) clearEditUser();
+            setActive("User List");
+          }}
+          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg flex items-center gap-2 hover:bg-gray-200 transition-colors text-sm font-bold border-none cursor-pointer font-sans"
+        >
+          <i className="fa-solid fa-arrow-left"></i> Back
+        </button>
+      </div>
 
       <form className="bg-white p-8 rounded-xl shadow-[0_15px_50px_-12px_rgba(0,0,0,0.1)] border border-gray-100/50" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 mb-6">
@@ -216,7 +237,7 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
             <input
               className="p-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-sky-900/30 bg-[#f8faff]/30"
               type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} required
-              autoComplete="off"
+              autoComplete="name"
             />
           </div>
           <div className="flex flex-col">
@@ -224,7 +245,7 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
             <input
               className="p-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-sky-900/30 bg-[#f8faff]/30"
               type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} required
-              autoComplete="off"
+              autoComplete="username"
             />
           </div>
           <div className="flex flex-col">
@@ -232,9 +253,12 @@ const NewUser = ({ setActive, editUserData, clearEditUser }) => {
             <select
               className="p-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-sky-900/30 bg-white"
               name="userType" value={formData.userType} onChange={handleChange}
+              autoComplete="off"
             >
-              <option value="User">User</option>
-              <option value="Admin">Admin</option>
+              <option value="customer">Customer</option>
+              <option value="provider">Provider</option>
+              <option value="adminuser">Admin User</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
 

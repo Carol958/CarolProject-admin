@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 const Sidebar = ({ active, setActive }) => {
   const [openSystemUsers, setOpenSystemUsers] = useState(false);
   const [openCategoryManagement, setOpenCategoryManagement] = useState(false);
+  const [openProvidersManagement, setOpenProvidersManagement] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -20,8 +21,7 @@ const Sidebar = ({ active, setActive }) => {
   const userInitial = userEmail.charAt(0).toUpperCase();
 
   const handleLogout = () => {
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("adminToken");
+    localStorage.clear();
     toast.success("Logged out successfully");
     navigate("/");
   };
@@ -102,10 +102,42 @@ const Sidebar = ({ active, setActive }) => {
             )}
           </div>
 
+          {/* Providers Management (Dropdown) */}
+          <div>
+            <button
+              onClick={() => setOpenProvidersManagement(!openProvidersManagement)}
+              className={`flex items-center w-full px-4 py-2 rounded-md hover:bg-[#64CCC5] hover:text-white transition-colors cursor-pointer ${active === "Pending Services" || active === "Pending Providers" || active === "Provider Details" ? "bg-[#64CCC5]/50" : ""}`}
+            >
+              <FaUsersCog className="text-lg" />
+              <span className="flex-1 ms-3 text-sm font-medium text-left">Providers Management</span>
+              {openProvidersManagement ? <IoChevronUp size={20} /> : <IoChevronDown size={20} />}
+            </button>
+
+            {openProvidersManagement && (
+              <ul className="mt-1 ms-6 space-y-1 text-sm">
+                <li>
+                  <div
+                    onClick={() => setActive("Pending Services")}
+                    className={`block px-2 py-1 rounded-md hover:bg-[#64CCC5]/80 cursor-pointer transition-colors ${active === "Pending Services" ? "font-bold text-[#64CCC5]" : ""}`}
+                  >
+                    • Pending Services
+                  </div>
+                </li>
+                <li>
+                  <div
+                    onClick={() => setActive("Pending Providers")}
+                    className={`block px-2 py-1 rounded-md hover:bg-[#64CCC5]/80 cursor-pointer transition-colors ${active === "Pending Providers" ? "font-bold text-[#64CCC5]" : ""}`}
+                  >
+                    • Pending Providers
+                  </div>
+                </li>
+              </ul>
+            )}
+          </div>
+
           {[
             { name: "Service Management", icon: <MdOutlineEventAvailable className="text-lg" /> },
             { name: "Booking Management", icon: <FaList className="text-lg" /> },
-            { name: "Providers Management", icon: <FaUsersCog className="text-lg" /> },
             { name: "Payout", icon: <FaMoneyBillWave className="text-lg" /> },
             { name: "Customer Management", icon: <MdManageAccounts className="text-lg" /> },
           ].map((link, idx) => (

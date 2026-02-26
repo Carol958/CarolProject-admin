@@ -29,9 +29,28 @@ export const CategoryProvider = ({ children }) => {
                 },
             });
 
+            if (res.status === 401 || res.status === 403) {
+                const errorData = await res.json().catch(() => ({}));
+                if (errorData.message?.toLowerCase().includes("expired") || res.status === 401) {
+                    toast.error("Session expired. Please log in again.");
+                    localStorage.clear();
+                    setTimeout(() => window.location.href = "/", 2000);
+                    return;
+                }
+            }
+
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
             const result = await res.json();
+
+            // Check for success: false inside 200 response
+            if (result.success === false && result.message?.toLowerCase().includes("expired")) {
+                toast.error("Session expired. Please log in again.");
+                localStorage.clear();
+                setTimeout(() => window.location.href = "/", 2000);
+                return;
+            }
+
             const data = Array.isArray(result)
                 ? result
                 : result.data || result.categories || [];
@@ -81,7 +100,22 @@ export const CategoryProvider = ({ children }) => {
                 body: formData,
             });
 
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            if (res.status === 401 || res.status === 403) {
+                toast.error("Session expired. Please log in again.");
+                localStorage.clear();
+                setTimeout(() => window.location.href = "/", 2000);
+                return false;
+            }
+
+            const responseData = await res.json().catch(() => ({}));
+            if (responseData.success === false && responseData.message?.toLowerCase().includes("expired")) {
+                toast.error("Session expired. Please log in again.");
+                localStorage.clear();
+                setTimeout(() => window.location.href = "/", 2000);
+                return false;
+            }
+
+            if (!res.ok) throw new Error(responseData.message || `HTTP error! status: ${res.status}`);
 
             await fetchCategories();
             return true;
@@ -105,13 +139,6 @@ export const CategoryProvider = ({ children }) => {
 
             const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
 
-            // Optimistic update
-            setCategories((prev) =>
-                prev.map((cat) =>
-                    cat.id === updated.id ? { ...cat, ...updated } : cat
-                )
-            );
-
             // Try PUT directly. If the server is Laravel/PHP and fails with FormData + PUT, 
             // the user might need to check if the route accepts POST with _method=PUT.
             // But since the previous POST + _method gave a 404, we are trying PUT directly.
@@ -125,9 +152,23 @@ export const CategoryProvider = ({ children }) => {
                 body: formData,
             });
 
+            if (res.status === 401 || res.status === 403) {
+                toast.error("Session expired. Please log in again.");
+                localStorage.clear();
+                setTimeout(() => window.location.href = "/", 2000);
+                return false;
+            }
+
+            const responseData = await res.json().catch(() => ({}));
+            if (responseData.success === false && responseData.message?.toLowerCase().includes("expired")) {
+                toast.error("Session expired. Please log in again.");
+                localStorage.clear();
+                setTimeout(() => window.location.href = "/", 2000);
+                return false;
+            }
+
             if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}));
-                throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+                throw new Error(responseData.message || `HTTP error! status: ${res.status}`);
             }
 
             await fetchCategories();
@@ -152,7 +193,22 @@ export const CategoryProvider = ({ children }) => {
                 },
             });
 
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            if (res.status === 401 || res.status === 403) {
+                toast.error("Session expired. Please log in again.");
+                localStorage.clear();
+                setTimeout(() => window.location.href = "/", 2000);
+                return;
+            }
+
+            const responseData = await res.json().catch(() => ({}));
+            if (responseData.success === false && responseData.message?.toLowerCase().includes("expired")) {
+                toast.error("Session expired. Please log in again.");
+                localStorage.clear();
+                setTimeout(() => window.location.href = "/", 2000);
+                return;
+            }
+
+            if (!res.ok) throw new Error(responseData.message || `HTTP error! status: ${res.status}`);
 
             setCategories((prev) =>
                 prev.filter((cat) => cat.id !== id)

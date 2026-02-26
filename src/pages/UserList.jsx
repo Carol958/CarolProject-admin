@@ -31,7 +31,7 @@ const UserList = ({ setActive, setEditUser }) => {
       console.log("User Context ID:", userId);
 
       if (!token) {
-        throw new Error("Authentication token missing. Please log in again.");
+        return;
       }
 
       const response = await fetch(url, {
@@ -48,6 +48,15 @@ const UserList = ({ setActive, setEditUser }) => {
 
       if (response.ok) {
         const data = await response.json();
+
+        // Handle cases where backend sends an error with status 200
+        if (data.success === false && data.message?.toLowerCase().includes("expired")) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.clear();
+          setTimeout(() => navigate("/"), 2000);
+          return;
+        }
+
         let rawUsers = Array.isArray(data) ? data : (data.users || data.data || []);
 
         setUsers(rawUsers.map(u => ({
@@ -55,15 +64,15 @@ const UserList = ({ setActive, setEditUser }) => {
           id: u.id || u._id || u.user_id || u.ID,
           status: (u.status === "active" || u.is_active || u.isActive) ? "active" : "inactive"
         })));
-      } else if (response.status === 401) {
-        toast.error("Session expired. Please log in again.");
-        localStorage.clear();
-        setTimeout(() => navigate("/"), 2000);
-      } else if (response.status === 403) {
+      } else if (response.status === 401 || response.status === 403) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("403 Error Details:", errorData);
-        if (errorData.message?.toLowerCase().includes("context")) {
-          toast.error("Session sync error. Logging out for fix...");
+        console.error("Auth Error Details:", errorData);
+
+        const isInactive = errorData.message?.toLowerCase().includes("not active") ||
+          errorData.message?.toLowerCase().includes("inactive");
+
+        if (isInactive || response.status === 401 || response.status === 403) {
+          toast.error("Session expired or access forbidden. Please log in again.");
           localStorage.clear();
           setTimeout(() => navigate("/"), 2000);
         } else {
@@ -81,7 +90,14 @@ const UserList = ({ setActive, setEditUser }) => {
   };
 
   useEffect(() => {
-    fetchUsers();
+    const storedToken = localStorage.getItem("adminToken") || localStorage.getItem("token");
+    const token = storedToken ? storedToken.trim() : null;
+    if (!token) {
+      toast.error("Authentication token missing. Please log in again.");
+      setTimeout(() => navigate("/"), 1000);
+    } else {
+      fetchUsers();
+    }
 
     const handleClickOutside = (event) => {
       if (!event.target.closest('.action-menu-container')) {
@@ -134,11 +150,6 @@ const UserList = ({ setActive, setEditUser }) => {
 
   const handleStatusChange = async (user) => {
     const newStatus = user.status?.toLowerCase() === "active" ? "inactive" : "active";
-    // Optimistic update
-    const updatedUsers = users.map((u) =>
-      u.id === user.id ? { ...u, status: newStatus } : u
-    );
-    setUsers(updatedUsers);
 
     try {
       const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
@@ -146,7 +157,8 @@ const UserList = ({ setActive, setEditUser }) => {
         ...user,
         phone: user.phone || user.contact,
         status: newStatus,
-        role: user.role || "customer"
+        role: user.role || "customer",
+        notification_preferences: typeof user.notification_preferences === 'string' ? user.notification_preferences : ""
       };
 
       const response = await fetch(`/api/users/${user.id}`, {
@@ -164,10 +176,9 @@ const UserList = ({ setActive, setEditUser }) => {
 
       console.log("Update status response:", response.status);
 
-      if (response.status === 401) {
-        toast.error("Session expired or token is inactive. Please log in again.");
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("token");
+      if (response.status === 401 || response.status === 403) {
+        toast.error("Session expired or access forbidden. Please log in again.");
+        localStorage.clear();
         setTimeout(() => navigate("/"), 2000);
         return;
       }
@@ -184,6 +195,7 @@ const UserList = ({ setActive, setEditUser }) => {
         throw new Error(errorData.message || `Update failed (${response.status})`);
       }
       toast.success(`User status updated to ${newStatus}`);
+      fetchUsers();
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error(error.message || "Failed to update status. Reverting...");
@@ -215,10 +227,9 @@ const UserList = ({ setActive, setEditUser }) => {
       if (response.ok) {
         setUsers(users.filter((u) => u.id !== userToDelete.id));
         toast.success("User deleted successfully");
-      } else if (response.status === 401) {
-        toast.error("Session expired. Please log in again.");
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("token");
+      } else if (response.status === 401 || response.status === 403) {
+        toast.error("Session expired or access forbidden. Please log in again.");
+        localStorage.clear();
         setTimeout(() => navigate("/"), 2000);
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -434,22 +445,24 @@ const UserList = ({ setActive, setEditUser }) => {
       )}
 
       {showConfirm && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-2xl text-center shadow-2xl max-w-sm w-full mx-4 border border-gray-50 animate-in zoom-in slide-in-from-bottom-4 duration-300">
-            <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-6 shadow-inner">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex justify-center items-center z-[100] p-4">
+          <div className="bg-white p-10 rounded-[32px] text-center shadow-2xl max-w-[380px] w-full border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
               <FaTrash />
             </div>
-            <h3 className="text-gray-900 font-black text-xl mb-3">Security Alert</h3>
-            <p className="text-gray-500 mb-8 leading-relaxed">You are about to permanently delete <span className="font-bold text-gray-800">@{userToDelete?.username || userToDelete?.name}</span>. Are you absolutely certain?</p>
-            <div className="flex gap-4">
+            <h3 className="text-[#04364A] font-bold text-2xl mb-2">Alert</h3>
+            <p className="text-gray-500 mb-8 leading-relaxed text-sm px-2">
+              You are about to permanently delete <span className="font-semibold text-gray-800">@{userToDelete?.username || userToDelete?.name}</span>. Are you absolutely certain?
+            </p>
+            <div className="flex gap-3">
               <button
-                className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-colors cursor-pointer"
+                className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-all cursor-pointer text-sm"
                 onClick={cancelDelete}
               >
                 Cancel
               </button>
               <button
-                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-100 cursor-pointer active:scale-95"
+                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 cursor-pointer active:scale-95 text-sm"
                 onClick={confirmDelete}
               >
                 Delete
