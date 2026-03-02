@@ -123,10 +123,11 @@ export default function PendingProviders({ setActive, setSelectedProviderDetail 
         if (!selectedProvider) return;
 
         try {
+            const providerId = selectedProvider.id || selectedProvider.userid || selectedProvider.User?.id;
             if (popupType === "approve") {
-                await approveProvider(selectedProvider.id);
+                await approveProvider(providerId);
             } else {
-                await rejectProvider(selectedProvider.id, rejectionReason);
+                await rejectProvider(providerId, rejectionReason);
             }
 
             toast.success(`Provider ${popupType === "approve" ? "approved" : "rejected"} successfully`);
@@ -134,7 +135,8 @@ export default function PendingProviders({ setActive, setSelectedProviderDetail 
             closePopup();
         } catch (error) {
             console.error(`Error ${popupType}ing provider:`, error);
-            toast.error(`Failed to ${popupType} provider`);
+            const msg = error.response?.data?.message || error.message || `Failed to ${popupType} provider`;
+            toast.error(msg);
         }
     };
 
@@ -215,7 +217,7 @@ export default function PendingProviders({ setActive, setSelectedProviderDetail 
                                     </td>
                                 </tr>
                             ) : currentItems.length > 0 ? (
-                                currentItems.map((provider) => (
+                                currentItems.map((provider, index) => (
                                     <tr key={provider.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors text-center">
                                         <td className="p-4 text-center text-sm font-medium text-gray-700">{provider.name || "N/A"}</td>
                                         <td className="p-4 text-center text-sm text-gray-500 whitespace-nowrap overflow-hidden">
@@ -278,7 +280,8 @@ export default function PendingProviders({ setActive, setSelectedProviderDetail 
 
                                             {openDropdownId === provider.id && (
                                                 <div
-                                                    className="absolute right-1/2 translate-x-1/2 mt-2 w-52 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-10 animate-in fade-in zoom-in duration-150"
+                                                    className={`absolute right-1/2 translate-x-1/2 w-52 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-20 animate-in fade-in zoom-in duration-150 ${index >= currentItems.length - 2 && currentItems.length > 2 ? "bottom-full mb-2" : "mt-2"
+                                                        }`}
                                                     ref={dropdownRef}
                                                 >
                                                     <button
@@ -373,7 +376,7 @@ export default function PendingProviders({ setActive, setSelectedProviderDetail 
 
             {/* Popup */}
             {showPopup && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex justify-center items-center z-[100] p-4">
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex justify-center items-center z-100 p-4">
                     <div className="bg-white p-10 rounded-[32px] text-center shadow-2xl max-w-[420px] w-full border border-gray-100 animate-in zoom-in-95 duration-200">
                         <h3 className="text-[#04364A] font-bold text-2xl mb-4">
                             {popupType === "approve" ? "Confirm Approval" : "Confirm Rejection"}

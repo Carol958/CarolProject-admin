@@ -41,23 +41,20 @@ export default function AddNewCategory({ setActive }) {
 
         setLoading(true);
         try {
-            const success = await addCategory({
+            await addCategory({
                 ...formData,
                 active: formData.active === "active",
             });
 
-            if (success) {
-                toast.success(`Category "${formData.name}" added successfully`);
-                if (setActive) {
-                    setActive("Category");
-                } else {
-                    navigate(-1);
-                }
+            toast.success(`Category "${formData.name}" added successfully`);
+            if (setActive) {
+                setActive("Category");
             } else {
-                toast.error("Failed to add category.");
+                navigate(-1);
             }
         } catch (err) {
-            toast.error("An error occurred.");
+            // Error is already toasted in CategoryContext
+            console.error(err);
         } finally {
             setLoading(false);
         }

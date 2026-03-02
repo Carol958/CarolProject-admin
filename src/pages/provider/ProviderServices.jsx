@@ -212,7 +212,7 @@ export default function ProviderServices({
                                     </td>
                                 </tr>
                             ) : currentItems.length > 0 ? (
-                                currentItems.map((provider) => (
+                                currentItems.map((provider, index) => (
                                     <tr key={provider.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors text-center">
                                         <td className="p-4 text-center text-sm font-medium text-gray-700">{provider.User?.name}</td>
                                         <td className="p-4 text-center text-sm text-gray-500 whitespace-nowrap overflow-hidden">{provider.User?.createdAt || provider.User?.created_at || "N/A"}</td>
@@ -236,7 +236,8 @@ export default function ProviderServices({
                                             </button>
 
                                             {openDropdownId === provider.id && (
-                                                <div className="absolute right-1/2 translate-x-1/2 mt-2 w-52 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-10 animate-in fade-in zoom-in duration-150">
+                                                <div className={`absolute right-1/2 translate-x-1/2 w-52 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-20 animate-in fade-in zoom-in duration-150 ${index >= currentItems.length - 2 && currentItems.length > 2 ? "bottom-full mb-2" : "mt-2"
+                                                    }`}>
                                                     <button
                                                         className="flex items-center gap-2 w-full px-4 py-2 hover:bg-sky-50 text-left hover:text-sky-500 font-semibold text-xs border-none bg-transparent cursor-pointer"
                                                         onClick={(e) => {
@@ -332,7 +333,7 @@ export default function ProviderServices({
 
             {/* Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex justify-center items-center z-[100] p-4">
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex justify-center items-center z-100 p-4">
                     <div className="bg-white p-10 rounded-[32px] text-center shadow-2xl max-w-[420px] w-full border border-gray-100 animate-in zoom-in-95 duration-200">
                         <h3 className="text-[#04364A] font-bold text-2xl mb-4">
                             {actionType === "approve" ? "Confirm Approval" : "Confirm Rejection"}

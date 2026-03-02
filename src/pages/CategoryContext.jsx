@@ -121,8 +121,9 @@ export const CategoryProvider = ({ children }) => {
             return true;
         } catch (error) {
             console.error("Add Category Error:", error);
-            alert("Add Failed");
-            return false;
+            const msg = error.message || "Add Failed";
+            toast.error(msg);
+            throw error;
         }
     };
 
@@ -215,7 +216,7 @@ export const CategoryProvider = ({ children }) => {
             );
         } catch (error) {
             console.error("Delete Category Error:", error);
-            alert("Delete Failed");
+            toast.error(error.message || "Delete Failed");
         }
     };
 

@@ -118,7 +118,7 @@ export const approveProvider = async (providerId) => {
 
     return axios.put(
         `${BASE_URL}/api/providers/${providerId}/approve`,
-        {},
+        { status: "Accepted" },
         {
             headers: {
                 "Accept": "application/json",
@@ -137,7 +137,7 @@ export const rejectProvider = async (providerId, reason) => {
 
     return axios.put(
         `${BASE_URL}/api/providers/${providerId}/reject`,
-        { reason },
+        { reason, status: "Rejected" },
         {
             headers: {
                 "Accept": "application/json",
