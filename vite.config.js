@@ -6,11 +6,12 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-  ],
+  ]
+  ,
   server: {
     proxy: {
       '/api': {
-        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        target: 'https://api.petrajuniors.com',
         changeOrigin: true,
         secure: false,
         ws: true,
@@ -19,7 +20,7 @@ export default defineConfig({
         }
       },
       '/uploads': {
-        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        target: 'https://api.petrajuniors.com',
         changeOrigin: true,
         secure: false,
         headers: {
@@ -27,7 +28,7 @@ export default defineConfig({
         }
       },
       '/storage': {
-        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        target: 'https://api.petrajuniors.com',
         changeOrigin: true,
         secure: false,
         headers: {
@@ -35,7 +36,7 @@ export default defineConfig({
         }
       },
       '/public': {
-        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        target: 'https://api.petrajuniors.com',
         changeOrigin: true,
         secure: false,
         headers: {
@@ -43,7 +44,7 @@ export default defineConfig({
         }
       },
       '/images': {
-        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        target: 'https://api.petrajuniors.com',
         changeOrigin: true,
         secure: false,
         headers: {
@@ -51,7 +52,7 @@ export default defineConfig({
         }
       },
       '/img': {
-        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        target: 'https://api.petrajuniors.com',
         changeOrigin: true,
         secure: false,
         headers: {
@@ -59,7 +60,7 @@ export default defineConfig({
         }
       },
       '/assets': {
-        target: 'https://eeriest-asymptotically-sherie.ngrok-free.dev',
+        target: 'https://api.petrajuniors.com',
         changeOrigin: true,
         secure: false,
         headers: {
