@@ -8,12 +8,14 @@ import {
 import { MdAdminPanelSettings, MdManageAccounts, MdOutlineEventAvailable } from "react-icons/md";
 import { IoChevronDown, IoChevronUp, IoHome } from "react-icons/io5";
 import { FiLogOut, FiMenu } from "react-icons/fi";
+import { TbCategory2 } from "react-icons/tb";
 import toast from "react-hot-toast";
 
 const Sidebar = ({ active, setActive }) => {
   const [openSystemUsers, setOpenSystemUsers] = useState(false);
   const [openCategoryManagement, setOpenCategoryManagement] = useState(false);
   const [openProvidersManagement, setOpenProvidersManagement] = useState(false);
+  const [openServiceManagement, setOpenServiceManagement] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -75,7 +77,7 @@ const Sidebar = ({ active, setActive }) => {
               onClick={() => setOpenCategoryManagement(!openCategoryManagement)}
               className={`flex items-center w-full px-4 py-2 rounded-md hover:bg-[#64CCC5] hover:text-white transition-colors cursor-pointer ${active === "Category" || active === "Sub Category" ? "bg-[#64CCC5]/50" : ""}`}
             >
-              <FaUsersCog className="text-lg" />
+              <TbCategory2 className="text-lg" />
               <span className="flex-1 ms-3 text-sm font-medium text-left">Category Management</span>
               {openCategoryManagement ? <IoChevronUp size={20} /> : <IoChevronDown size={20} />}
             </button>
@@ -135,20 +137,38 @@ const Sidebar = ({ active, setActive }) => {
             )}
           </div>
 
-          {[
-            { name: "Service Management", icon: <MdOutlineEventAvailable className="text-lg" /> },
-            { name: "Booking Management", icon: <FaList className="text-lg" /> },
-            { name: "Payout", icon: <FaMoneyBillWave className="text-lg" /> },
-            { name: "Customer Management", icon: <MdManageAccounts className="text-lg" /> },
-          ].map((link, idx) => (
-            <div
-              key={idx}
-              className="flex items-center px-4 py-2 rounded-md hover:bg-[#64CCC5] hover:text-white transition-colors cursor-pointer"
+          {/* Service Management (Dropdown) */}
+          <div>
+            <button
+              onClick={() => setOpenServiceManagement(!openServiceManagement)}
+              className={`flex items-center w-full px-4 py-2 rounded-md hover:bg-[#64CCC5] hover:text-white transition-colors cursor-pointer ${active === "Services List" || active === "Add New Service" ? "bg-[#64CCC5]/50" : ""}`}
             >
-              {link.icon}
-              <span className="flex-1 ms-3 text-sm font-medium">{link.name}</span>
-            </div>
-          ))}
+              <MdOutlineEventAvailable className="text-lg" />
+              <span className="flex-1 ms-3 text-sm font-medium text-left">Service Management</span>
+              {openServiceManagement ? <IoChevronUp size={20} /> : <IoChevronDown size={20} />}
+            </button>
+
+            {openServiceManagement && (
+              <ul className="mt-1 ms-6 space-y-1 text-sm">
+                <li>
+                  <div
+                    onClick={() => setActive("Services List")}
+                    className={`block px-2 py-1 rounded-md hover:bg-[#64CCC5]/80 cursor-pointer transition-colors ${active === "Services List" ? "font-bold text-[#64CCC5]" : ""}`}
+                  >
+                    • Services List
+                  </div>
+                </li>
+                <li>
+                  <div
+                    onClick={() => setActive("Add New Service")}
+                    className={`block px-2 py-1 rounded-md hover:bg-[#64CCC5]/80 cursor-pointer transition-colors ${active === "Add New Service" ? "font-bold text-[#64CCC5]" : ""}`}
+                  >
+                    • Add New Service
+                  </div>
+                </li>
+              </ul>
+            )}
+          </div>
 
           {/* System Users Management (Dropdown) */}
           <div>
@@ -182,6 +202,20 @@ const Sidebar = ({ active, setActive }) => {
               </ul>
             )}
           </div>
+
+          {[
+            { name: "Booking Management", icon: <FaList className="text-lg" /> },
+            { name: "Payout", icon: <FaMoneyBillWave className="text-lg" /> },
+            { name: "Customer Management", icon: <MdManageAccounts className="text-lg" /> },
+          ].map((link, idx) => (
+            <div
+              key={idx}
+              className="flex items-center px-4 py-2 rounded-md hover:bg-[#64CCC5] hover:text-white transition-colors cursor-pointer"
+            >
+              {link.icon}
+              <span className="flex-1 ms-3 text-sm font-medium">{link.name}</span>
+            </div>
+          ))}
 
         </div>
 

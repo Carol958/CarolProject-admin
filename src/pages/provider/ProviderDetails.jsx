@@ -288,14 +288,6 @@ export default function ProviderDetails({ provider = {}, onBack }) {
                         </div>
                     )}
 
-                    {onBack && (
-                        <button
-                            onClick={onBack}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-bold border-none cursor-pointer"
-                        >
-                            <FaArrowLeft size={14} /> Back
-                        </button>
-                    )}
                 </div>
             </div>
 
@@ -315,7 +307,7 @@ export default function ProviderDetails({ provider = {}, onBack }) {
                     <div className="flex flex-col items-center mb-2">
                         <div className="relative p-1 rounded-full bg-linear-to-tr from-sky-400 via-sky-100 to-sky-50 shadow-sm mb-2">
                             <img
-                                src={providerData.image ? getImageUrl(providerData.image) : "https://cdn-icons-png.flaticon.com/512/8847/8847419.png"}
+                                src={(providerData.image || providerData.User?.image || providerData.image_url) ? getImageUrl(providerData.image || providerData.User?.image || providerData.image_url) : "https://cdn-icons-png.flaticon.com/512/8847/8847419.png"}
                                 alt="Profile"
                                 className="w-20 h-20 object-cover rounded-full border-2 border-white shadow-inner"
                                 onError={handleImageError}
@@ -437,7 +429,8 @@ export default function ProviderDetails({ provider = {}, onBack }) {
                             setActionType("acceptAll");
                             setModalOpen(true);
                         }}
-                        className="px-4 py-1.5 bg-[#04364A] text-white rounded-lg hover:bg-sky-900 transition font-bold text-xs shadow-sm border-none cursor-pointer"
+                        disabled={filteredServices.length === 0}
+                        className="px-4 py-1.5 bg-[#04364A] text-white rounded-lg hover:bg-sky-900 transition font-bold text-xs shadow-sm border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Accept All
                     </button>
@@ -446,7 +439,8 @@ export default function ProviderDetails({ provider = {}, onBack }) {
                             setActionType("rejectAll");
                             setModalOpen(true);
                         }}
-                        className="px-4 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition font-bold text-xs shadow-sm border border-red-100 cursor-pointer"
+                        disabled={filteredServices.length === 0}
+                        className="px-4 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition font-bold text-xs shadow-sm border border-red-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Reject All
                     </button>
@@ -529,7 +523,7 @@ export default function ProviderDetails({ provider = {}, onBack }) {
                 ) : (
                     <div className="col-span-full py-20 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
                         <FaInbox size={40} className="mx-auto text-gray-200 mb-3" />
-                        <p className="text-gray-400 font-bold italic">No matching services found.</p>
+                        <p className="text-gray-400 font-bold italic">No Requested services found.</p>
                     </div>
                 )}
             </div>

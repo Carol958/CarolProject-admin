@@ -133,12 +133,6 @@ export default function ProviderServices({
                 <h2 className="m-0 text-[#04364A] text-xl font-bold">
                     Pending Service Request
                 </h2>
-                <button
-                    onClick={refreshServices}
-                    className="px-4 py-2 bg-sky-50 text-sky-700 rounded-lg text-sm font-bold hover:bg-sky-100 transition-colors border border-sky-100 shadow-sm"
-                >
-                    Refresh List
-                </button>
             </div>
 
             {/* Controls Bar */}

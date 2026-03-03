@@ -13,6 +13,8 @@ import AddNewSubcategory from "./AddNewSubcategory";
 import { SubcategoryProvider } from "./SubcategoryContext";
 import ProviderServices from "./provider/ProviderServices";
 import ProviderDetails from "./provider/ProviderDetails";
+import ServiceList from "./provider/ServiceList";
+import AddNewService from "./provider/AddNewService";
 import PendingProviders from "./PendingProviders";
 import ErrorBoundary from "../components/ErrorBoundary";
 import { getPendingServices } from "../services/adminService";
@@ -148,6 +150,8 @@ const AdminDashboard = () => {
             {(active === "Add New Subcategory" || active === "Edit Subcategory") && (
               <AddNewSubcategory setActive={setActive} editId={editSubcategoryId} />
             )}
+            {active === "Services List" && <ServiceList setActive={setActive} />}
+            {active === "Add New Service" && <AddNewService setActive={setActive} />}
           </SubcategoryProvider>
         </CategoryProvider>
       </div>
