@@ -40,14 +40,14 @@ export const getImageUrl = (imgName) => {
 
 /**
  * A central error handler for image loading failures.
- * Attempts several common Laravel/Vite storage paths before falling back to a placeholder.
+ * Attempts several common Laravel/Vite storage paths while preserving directory structure.
  * @param {Event} e - The error event from the img tag.
  */
 export const handleImageError = (e) => {
     const prefixes = [
-        'storage/uploads',
         'storage',
         'uploads',
+        'storage/uploads',
         'public/storage',
         'public/uploads',
         'api/storage',
@@ -59,38 +59,83 @@ export const handleImageError = (e) => {
         'api',
         'img',
         'images',
-        'assets/img'
+        'assets/img',
+        'UserImages',
+        'photos'
     ];
 
     let idx = parseInt(e.target.dataset.fallbackIdx || "0");
     const currentSrc = e.target.src;
 
-    // Deduce filename
-    const urlParts = currentSrc.split('/');
-    const fileNameWithParams = urlParts[urlParts.length - 1];
-    const fileName = fileNameWithParams.split('?')[0];
+    // Extract the "pure path" by identifying where the first known prefix ends
+    // or by taking everything after the domain
+    let relativePath = "";
+    const knownPrefixes = ['uploads', 'storage', 'public', 'images', 'api', 'assets', 'img', 'UserImages'];
 
-    // Skip prefixes that are already in the URL to avoid redundant requests
-    while (idx < prefixes.length && currentSrc.includes(`/${prefixes[idx]}/`)) {
+    let foundPrefix = false;
+    for (const p of knownPrefixes) {
+        const searchStr = `/${p}/`;
+        const pIdx = currentSrc.indexOf(searchStr);
+        if (pIdx !== -1) {
+            relativePath = currentSrc.substring(pIdx + searchStr.length);
+            foundPrefix = true;
+            break;
+        }
+    }
+
+    if (!foundPrefix) {
+        // Fallback to just the filename if no prefix identified
+        const urlParts = currentSrc.split('/');
+        relativePath = urlParts[urlParts.length - 1].split('?')[0];
+    }
+
+    // Skip prefixes that would result in the same URL
+    while (idx < prefixes.length && currentSrc.includes(`/${prefixes[idx]}/${relativePath}`)) {
         idx++;
     }
 
     if (idx < prefixes.length) {
         const nextPrefix = prefixes[idx];
         e.target.dataset.fallbackIdx = (idx + 1).toString();
-
-        const nextSrc = `/${nextPrefix}${nextPrefix ? '/' : ''}${fileName}`;
-        console.log(`Image fallback [${idx}]: ${currentSrc} -> ${nextSrc}`);
+        const nextSrc = `/${nextPrefix}${nextPrefix ? '/' : ''}${relativePath}`;
+        console.log(`Image fallback [${idx}]: ${nextPrefix} -> ${nextSrc}`);
         e.target.src = nextSrc;
     } else if (idx === prefixes.length) {
-        // Last-ditch effort: filename at root
+        // Try filename at root
         e.target.dataset.fallbackIdx = (idx + 1).toString();
-        e.target.src = `/${fileName}`;
-        console.log(`Image fallback [Root]: /${fileName}`);
+        e.target.src = `/${relativePath}`;
+        console.log(`Image fallback [Root]: /${relativePath}`);
+    } else if (idx === prefixes.length + 1) {
+        // External Fallbacks to backend
+        e.target.dataset.fallbackIdx = (idx + 1).toString();
+        const fullBackendUrl = `https://api.petrajuniors.com/storage/${relativePath}`;
+        console.log(`Image fallback [External Storage]: ${fullBackendUrl}`);
+        e.target.src = fullBackendUrl;
+    } else if (idx === prefixes.length + 2) {
+        e.target.dataset.fallbackIdx = (idx + 1).toString();
+        const fullBackendUrl = `https://api.petrajuniors.com/uploads/${relativePath}`;
+        console.log(`Image fallback [External Uploads]: ${fullBackendUrl}`);
+        e.target.src = fullBackendUrl;
+    } else if (idx === prefixes.length + 3) {
+        e.target.dataset.fallbackIdx = (idx + 1).toString();
+        const fullBackendUrl = `https://api.petrajuniors.com/public/${relativePath}`;
+        console.log(`Image fallback [External Public]: ${fullBackendUrl}`);
+        e.target.src = fullBackendUrl;
+    } else if (idx === prefixes.length + 4) {
+        e.target.dataset.fallbackIdx = (idx + 1).toString();
+        const fullBackendUrl = `https://api.petrajuniors.com/${relativePath}`;
+        console.log(`Image fallback [External Root]: ${fullBackendUrl}`);
+        e.target.src = fullBackendUrl;
     } else {
         // Ultimate fallback: Placeholder
         e.target.onerror = null;
-        e.target.src = "https://cdn-icons-png.flaticon.com/512/8847/8847419.png";
-        console.warn("All image fallback paths failed for:", fileName);
+        console.warn("All image fallback paths failed for:", relativePath);
+
+        // Final attempt for common avatar if it was likely a profile pic
+        if (relativePath.toLowerCase().includes('profile') || relativePath.toLowerCase().includes('user') || relativePath.toLowerCase().includes('avatar')) {
+            e.target.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        } else {
+            e.target.src = "https://cdn-icons-png.flaticon.com/512/8847/8847419.png";
+        }
     }
 };

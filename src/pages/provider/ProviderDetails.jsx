@@ -307,7 +307,21 @@ export default function ProviderDetails({ provider = {}, onBack }) {
                     <div className="flex flex-col items-center mb-2">
                         <div className="relative p-1 rounded-full bg-linear-to-tr from-sky-400 via-sky-100 to-sky-50 shadow-sm mb-2">
                             <img
-                                src={(providerData.image || providerData.User?.image || providerData.image_url) ? getImageUrl(providerData.image || providerData.User?.image || providerData.image_url) : "https://cdn-icons-png.flaticon.com/512/8847/8847419.png"}
+                                src={(
+                                    providerData.image ||
+                                    providerData.User?.image ||
+                                    providerData.image_url ||
+                                    providerData.User?.profile_photo_path ||
+                                    providerData.profile_image ||
+                                    providerData.User?.avatar
+                                ) ? getImageUrl(
+                                    providerData.image ||
+                                    providerData.User?.image ||
+                                    providerData.image_url ||
+                                    providerData.User?.profile_photo_path ||
+                                    providerData.profile_image ||
+                                    providerData.User?.avatar
+                                ) : "https://cdn-icons-png.flaticon.com/512/8847/8847419.png"}
                                 alt="Profile"
                                 className="w-20 h-20 object-cover rounded-full border-2 border-white shadow-inner"
                                 onError={handleImageError}

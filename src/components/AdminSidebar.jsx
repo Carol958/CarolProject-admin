@@ -9,6 +9,7 @@ import { MdAdminPanelSettings, MdManageAccounts, MdOutlineEventAvailable } from 
 import { IoChevronDown, IoChevronUp, IoHome } from "react-icons/io5";
 import { FiLogOut, FiMenu } from "react-icons/fi";
 import { TbCategory2 } from "react-icons/tb";
+import { FaExclamation } from "react-icons/fa";
 import toast from "react-hot-toast";
 
 const Sidebar = ({ active, setActive }) => {
@@ -17,6 +18,7 @@ const Sidebar = ({ active, setActive }) => {
   const [openProvidersManagement, setOpenProvidersManagement] = useState(false);
   const [openServiceManagement, setOpenServiceManagement] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
   const userEmail = localStorage.getItem("userEmail") || "admin@example.com";
@@ -222,8 +224,8 @@ const Sidebar = ({ active, setActive }) => {
         {/* Logout */}
         <div className="p-4 border-t border-white/10">
           <button
-            onClick={handleLogout}
-            className="w-full py-2 text-center rounded-md hover:bg-red-500/20 text-white hover:text-red-500 transition-colors flex items-center justify-center gap-2"
+            onClick={() => setShowLogoutModal(true)}
+            className="w-full py-2 text-center rounded-md hover:bg-red-500/20 text-white hover:text-red-500 transition-colors flex items-center justify-center gap-2 cursor-pointer"
           >
             Logout
             <FiLogOut />
@@ -231,6 +233,42 @@ const Sidebar = ({ active, setActive }) => {
         </div>
 
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-100 flex justify-center items-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white p-8 rounded-[32px] text-center shadow-2xl max-w-[400px] w-full border border-gray-100 animate-in zoom-in-95 duration-200">
+            {/* Warning Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center border-4 border-white shadow-sm">
+                <div className="w-12 h-12 rounded-full border-2 border-red-500 flex items-center justify-center">
+                  <span className="text-red-500 text-2xl font-bold">!</span>
+                </div>
+              </div>
+            </div>
+
+            <h3 className="text-[#04364A] font-bold text-2xl mb-3">Sign Out?</h3>
+            <p className="text-gray-500 mb-8 leading-relaxed font-medium">
+              Are you sure you want to log out of your account?
+            </p>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 py-3.5 rounded-2xl bg-[#F1F4F9] text-[#04364A] font-bold hover:bg-gray-200 transition-all cursor-pointer text-sm uppercase tracking-wider"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 py-3.5 rounded-2xl bg-[#04364A] text-white font-bold hover:bg-[#032d3d] transition-all shadow-lg active:scale-95 cursor-pointer text-sm uppercase tracking-wider"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
